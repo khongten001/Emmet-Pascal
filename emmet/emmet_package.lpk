@@ -13,11 +13,15 @@
     <Description Value="Emmet completion engine written from scratch."/>
     <License Value="Free to use in non-commercial software. Needs donation to Rickard Johansson for commercial use, see https://rj-texted.se/ ."/>
     <Version Minor="2"/>
-    <Files Count="1">
+    <Files Count="2">
       <Item1>
         <Filename Value="emmet.pas"/>
         <UnitName Value="Emmet"/>
       </Item1>
+      <Item2>
+        <Filename Value="emmethelper.pas"/>
+        <UnitName Value="EmmetHelper"/>
+      </Item2>
     </Files>
     <RequiredPkgs Count="2">
       <Item1>

@@ -8,7 +8,7 @@ unit emmet_package;
 interface
 
 uses
-  Emmet;
+  Emmet, EmmetHelper;
 
 implementation
 
