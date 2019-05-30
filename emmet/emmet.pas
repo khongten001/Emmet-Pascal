@@ -96,6 +96,11 @@ uses
   SysUtils, Dialogs, Math;
   {$endif}
 
+{$ifndef fpc}
+const
+  DirectorySeparator = System.SysUtils.PathDelim;
+{$endif}
+
 const
   cInlineLevel = 'a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var';
 
