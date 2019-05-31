@@ -72,6 +72,15 @@ begin
       Found:= true;
       Break;
     end;
+
+    if S[N]=' ' then
+    begin
+      StartOffset:= N;
+      Abbrev:= Copy(S, StartOffset+1, CurOffset-StartOffset);
+      Found:= true;
+      Break;
+    end;
+
     if S[N]='>' then
       if EmmetOffsetIsTagEnd(S, N) then
       begin
@@ -80,6 +89,7 @@ begin
         Found:= true;
         Break;
       end;
+
     Dec(N);
   until false;
 
