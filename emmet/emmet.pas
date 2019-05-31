@@ -2,7 +2,7 @@
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
 Date:      31-May-2019
-Version:   1.02
+Version:   1.03
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -29,6 +29,8 @@ and call
 (*------------------------------------------------------------------------------------------
 Version updates and changes
 
+Version 1.03
+    * Fixed several issues and updated the snippets.ini file.
 Version 1.02
     * Addressed some warnings in Lazarus
 Version 1.01
@@ -268,8 +270,6 @@ var
   end;
 
   function ProcessVendor(const sv, s: string): string;
-  var
-    ws: string;
   begin
     Result := s;
 
@@ -491,6 +491,7 @@ begin
   tagListCount := FTagList.Count;
   npos := 1;
   indx := 1;
+  s := '';
   while indx <= Length(sAbbrev) do
   begin
     ch := sAbbrev[indx];
@@ -1012,6 +1013,8 @@ var
   ls: TStringList;
 begin
   Result := '';
+  if sAttribute = '' then Exit;
+
   ls := TStringList.Create;
   try
     i := Pos(#32,sAttribute);
@@ -1051,7 +1054,11 @@ begin
 
     for i := 0 to ls.Count - 1 do
     begin
-      sa := ls.ValueFromIndex[i];
+      sn := ls[i];
+      if Pos('=',sn) = 0 then
+        sa := ''
+      else
+        sa := ls.ValueFromIndex[i];
       if (sa <> '') and (sa[1] = #39) then
         sa := StringReplace(sa, #39, '"', [rfReplaceAll])
       else if (sa = '') then
@@ -1396,7 +1403,10 @@ begin
       if bAddSelection then
         w := InsertSelection(w, True);
       w := ReplaceVariables(w, nIndex);
-      Result := Result + w;
+      if (Length(Result) > 0) and (Result[Length(Result)] <> #10) then
+        Result := Result + #13#10 + w
+      else
+        Result := Result + w;
       Dec(num);
       Inc(nIndex,nInc);
     end;
