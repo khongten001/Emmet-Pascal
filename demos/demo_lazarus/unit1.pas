@@ -14,6 +14,7 @@ type
 
   TForm1 = class(TForm)
     ButtonExpand: TButton;
+    ComboSyntax: TComboBox;
     EditInput: TEdit;
     Label1: TLabel;
     MemoOut: TMemo;
@@ -58,7 +59,7 @@ var
 begin
   SResult:= FEmmet.ExpandAbbreviation(
     EditInput.Text,
-    'html', //syntax
+    ComboSyntax.Text,
     '',
     SSection,
     bMulti
