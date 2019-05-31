@@ -1,7 +1,8 @@
 (*--------------------------------------------------------------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      30-May-2019
+Date:      31-May-2019
+Version:   1.01
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -24,6 +25,12 @@ and call
 
     sExpanded is the resulting expanded code. It may contain cursor | positions or
     selected tab ${1:charset} positions.
+--------------------------------------------------------------------------------------------*)
+(*------------------------------------------------------------------------------------------
+Version updates and changes
+
+Version 1.01
+    * Fixed a multiply issue in ProcessTagMultiplication(...)
 --------------------------------------------------------------------------------------------*)
 
 unit Emmet;
@@ -1260,7 +1267,7 @@ end;
 function TEmmet.ProcessTagMultiplication(const AString: string; const index,
     len, indent: Integer): string;
 var
-  i,n,num: Integer;
+  i,n,num,numlen: Integer;
   nStart,nIndex,nInc: Integer;
   s,w: string;
   bAddSelection: Boolean;
@@ -1298,7 +1305,7 @@ var
     end;
   end;
 
-  function GetNumber(const ws: string; n, i: Integer; out astart, ainc: Integer): Integer;
+  function GetNumber(const ws: string; n, i: Integer; var nrlen: Integer; out astart, ainc: Integer): Integer;
   var
     sn: string;
   begin
@@ -1309,6 +1316,8 @@ var
     sn := Copy(ws,n+1,i-n-1);
     if sn <> '' then
       Result := StrToInt(sn);
+
+    nrlen := Length(sn);
 
     if (Result = 0) and (FSelection <> '') then
     begin
@@ -1363,7 +1372,8 @@ begin
 
   // Get number
   i := n + 1;
-  num := GetNumber(AString,n,i,nStart,nInc);
+  num := GetNumber(AString,n,i,numlen,nStart,nInc);
+  Inc(i,numlen);
 
   // handle '>' after number
   if (i <= Length(AString)) and (AString[i] = '>') then
