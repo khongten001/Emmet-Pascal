@@ -54,4 +54,20 @@ object Form1: TForm1
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
   end
+  object ComboSyntax: TComboBox
+    Left = 449
+    Top = 64
+    Width = 145
+    Height = 21
+    Style = csDropDownList
+    Anchors = [akTop, akRight]
+    ItemIndex = 0
+    TabOrder = 3
+    Text = 'html'
+    Items.Strings = (
+      'html'
+      'css'
+      'xsl'
+      'svg')
+  end
 end

@@ -15,6 +15,7 @@ type
     EditInput: TEdit;
     Label1: TLabel;
     MemoOut: TMemo;
+    ComboSyntax: TComboBox;
     procedure ButtonExpandClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -56,7 +57,7 @@ var
 begin
   SResult:= FEmmet.ExpandAbbreviation(
     EditInput.Text,
-    'html', //syntax
+    ComboSyntax.Text,
     '',
     SSection,
     bMulti
