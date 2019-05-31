@@ -23,6 +23,11 @@ begin
   end;
 end;
 
+function IsCharSpace(ch: char): boolean;
+begin
+  Result:= (ch=' ') or (ch=#9);
+end;
+
 function EmmetOffsetIsTagEnd(const S: string; N: integer): boolean;
 begin
   Result:= false;
@@ -49,10 +54,12 @@ end;
 procedure EmmetFindAbbrev(const S: string; CurOffset: integer;
   out StartOffset: integer; out Abbrev: string);
 var
+  Found: boolean;
   N: integer;
 begin
-  StartOffset:= 0;
+  StartOffset:= CurOffset;
   Abbrev:= '';
+  Found:= false;
 
   CurOffset:= Min(CurOffset, Length(S));
   N:= CurOffset;
@@ -62,17 +69,26 @@ begin
     begin
       StartOffset:= 0;
       Abbrev:= Copy(S, StartOffset+1, CurOffset-StartOffset);
-      Exit;
+      Found:= true;
+      Break;
     end;
     if S[N]='>' then
       if EmmetOffsetIsTagEnd(S, N) then
       begin
         StartOffset:= N;
         Abbrev:= Copy(S, StartOffset+1, CurOffset-StartOffset);
-        Exit;
+        Found:= true;
+        Break;
       end;
     Dec(N);
   until false;
+
+  if Found then
+    while (StartOffset<Length(S)) and IsCharSpace(S[StartOffset+1]) do
+    begin
+      Inc(StartOffset);
+      Delete(Abbrev, 1, 1);
+    end;
 end;
 
 end.

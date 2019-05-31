@@ -7,3 +7,4 @@ project1
 *.identcache
 *.local
 *.stat
+*.lps
