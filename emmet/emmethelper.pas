@@ -56,15 +56,20 @@ procedure EmmetFindAbbrev(const S: string; CurOffset: integer;
 var
   Found: boolean;
   N: integer;
+  bBrackets, bQuotes: boolean;
 begin
   StartOffset:= CurOffset;
   Abbrev:= '';
   Found:= false;
 
   CurOffset:= Min(CurOffset, Length(S));
-  N:= CurOffset;
+  N:= CurOffset+1;
+  bBrackets:= false;
+  bQuotes:= false;
 
   repeat
+    Dec(N);
+
     if N=0 then
     begin
       StartOffset:= 0;
@@ -73,13 +78,32 @@ begin
       Break;
     end;
 
-    if S[N]=' ' then
+    if S[N]='}' then
     begin
-      StartOffset:= N;
-      Abbrev:= Copy(S, StartOffset+1, CurOffset-StartOffset);
-      Found:= true;
-      Break;
+      bBrackets:= true;
+      Continue;
     end;
+
+    if S[N]='{' then
+    begin
+      bBrackets:= false;
+      Continue;
+    end;
+
+    if S[N]='"' then
+    begin
+      bQuotes:= not bQuotes;
+      Continue;
+    end;
+
+    if IsCharSpace(S[N]) then
+      if not bBrackets and not bQuotes then
+      begin
+        StartOffset:= N;
+        Abbrev:= Copy(S, StartOffset+1, CurOffset-StartOffset);
+        Found:= true;
+        Break;
+      end;
 
     if S[N]='>' then
       if EmmetOffsetIsTagEnd(S, N) then
@@ -89,8 +113,6 @@ begin
         Found:= true;
         Break;
       end;
-
-    Dec(N);
   until false;
 
   if Found then
