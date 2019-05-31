@@ -2,7 +2,7 @@
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
 Date:      31-May-2019
-Version:   1.01
+Version:   1.02
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -29,6 +29,8 @@ and call
 (*------------------------------------------------------------------------------------------
 Version updates and changes
 
+Version 1.02
+    * Addressed some warnings in Lazarus
 Version 1.01
     * Fixed a multiply issue in ProcessTagMultiplication(...)
 --------------------------------------------------------------------------------------------*)
@@ -88,9 +90,9 @@ type
     destructor Destroy; override;
     function ExpandAbbreviation(const AString, ASyntax, ASelText: string; out
         ASection: string; out bMultiCursorTabs: Boolean): string;
-    function GetAbbreviationNames(const ASyntax: string; out AList: TStringList):
+    function GetAbbreviationNames(const ASyntax: string; var AList: TStringList):
         Boolean;
-    function GetSnippetNames(const ASyntax: string; out AList: TStringList):
+    function GetSnippetNames(const ASyntax: string; var AList: TStringList):
         Boolean;
   end;
 
@@ -398,18 +400,19 @@ var
     end;
   end;
 
-  function ClimbUpOneLevel: string;
+  function ClimbUpOneLevel(const s: string): string;
   var
     w: string;
     bText: Boolean;
   begin
+    Result := s;
     while (FTagList.Count > 0) and (FTagList.Count >= tagListCount) do
     begin
       w := FTagList[FTagList.Count-1];
       if IsTagInline(w,bText) then
-        s := s + InsertTabPoint(s) + w
+        Result := Result + InsertTabPoint(s) + w
       else
-        s := s + InsertTabPoint(s) + w + #13#10;
+        Result := Result + InsertTabPoint(s) + w + #13#10;
       FTagList.Delete(FTagList.Count-1);
       Dec(indent);
     end;
@@ -420,7 +423,7 @@ var
     w: string;
     bText: Boolean;
   begin
-    Result := Result + ProcessTagAbbrev(s,npos,indx-npos,indent);
+    Result := ProcessTagAbbrev(s,npos,indx-npos,indent);
     if FTagList.Count > tagListCount then
     begin
       w := FTagList[FTagList.Count-1];
@@ -547,11 +550,11 @@ begin
           else
             s := s + sw
         end;
-        s := s + ClimbUpOneLevel;
+        s := ClimbUpOneLevel(s);
         while (indx + 1 < Length(sAbbrev)) and (sAbbrev[indx+1] = '^') do
         begin
           Dec(tagListCount);
-          s := s + ClimbUpOneLevel;
+          s := ClimbUpOneLevel(s);
           Inc(indx);
         end;
         Inc(indent);
@@ -1094,7 +1097,7 @@ begin
   end;
 end;
 
-function TEmmet.GetAbbreviationNames(const ASyntax: string; out AList:
+function TEmmet.GetAbbreviationNames(const ASyntax: string; var AList:
     TStringList): Boolean;
 var
   sa,se: string;
@@ -1118,7 +1121,7 @@ begin
   Result := AList.Count > 0;
 end;
 
-function TEmmet.GetSnippetNames(const ASyntax: string; out AList: TStringList):
+function TEmmet.GetSnippetNames(const ASyntax: string; var AList: TStringList):
     Boolean;
 var
   sc,se: string;
