@@ -1,9 +1,13 @@
 Post by Rickard Johansson » 30 May 2019 13:59
-In RJ TextEd I wrote my own version of Emmet. It is not based on the original Emmet code, but written from scratch in Delphi (object pascal).
+In RJ TextEd I wrote my own version of Emmet. It is not based on the original Emmet code,
+but written from scratch in Delphi (object pascal).
 
-You are perfectly free to use it in your own code or applications. But if you're using it in a commercial product I would appreciate a donation.
+You are perfectly free to use it in your own code or applications. But if you're using it
+in a commercial product I would appreciate a donation.
 
-The Emmet code only expand abbreviation or wrap text with abbreviation. All other editor stuff like handle tab points or multi cursors you will have to handle yourself in your own code. That's what I do in RJ TextEd.
+The Emmet code only expand abbreviation or wrap text with abbreviation. All other editor
+stuff like handle tab points or multi cursors you will have to handle yourself in your
+own code. That's what I do in RJ TextEd.
 
 https://www.rj-texted.se/Help/Emmetcheatsheet.html
 
