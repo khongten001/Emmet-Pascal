@@ -2,7 +2,7 @@
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
 Date:      1-June-2019
-Version:   1.04
+Version:   1.05
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -28,6 +28,9 @@ and call
 --------------------------------------------------------------------------------------------*)
 (*------------------------------------------------------------------------------------------
 Version updates and changes
+
+Version 1.05
+    * Fixed a child indent issue.
 
 Version 1.04
     * Added standard vendor prefix "-" to CSS. E.g. -bdrs (which works the same as -v-bdrs).
@@ -609,7 +612,7 @@ begin
     Inc(indx);
     if (npos < indx) and (npos <= Length(sAbbrev)) and (indx > Length(sAbbrev)) then
     begin
-      if (Length(s) > 0) and (s[Length(s)] = #10) then
+      if (Length(s) = 0) or ((Length(s) > 0) and (s[Length(s)] = #10)) then
         s := s + AddExpanded(sAbbrev)
       else
         s := s + Trim(AddExpanded(sAbbrev));
