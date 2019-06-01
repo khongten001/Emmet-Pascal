@@ -113,12 +113,18 @@ uses
   {$ifndef fpc}
   System.SysUtils, Vcl.Dialogs, System.Math;
   {$else}
-  SysUtils, Dialogs, Math;
+  SysUtils, Dialogs, Math, StrUtils;
   {$endif}
 
 {$ifndef fpc}
 const
   DirectorySeparator = System.SysUtils.PathDelim;
+{$else}
+// Compatability with FPC 3.0.4
+function Pos(const SubStr, Str: string; Offset: integer=1): integer; inline;
+begin
+  Result := PosEx(SubStr, Str, Offset);
+end;
 {$endif}
 
 const
