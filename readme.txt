@@ -5,6 +5,8 @@ You are perfectly free to use it in your own code or applications. But if you're
 
 The Emmet code only expand abbreviation or wrap text with abbreviation. All other editor stuff like handle tab points or multi cursors you will have to handle yourself in your own code. That's what I do in RJ TextEd.
 
+https://www.rj-texted.se/Help/Emmetcheatsheet.html
+
 ------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
