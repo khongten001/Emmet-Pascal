@@ -1,8 +1,8 @@
 (*--------------------------------------------------------------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      31-May-2019
-Version:   1.03
+Date:      1-June-2019
+Version:   1.04
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -28,6 +28,12 @@ and call
 --------------------------------------------------------------------------------------------*)
 (*------------------------------------------------------------------------------------------
 Version updates and changes
+
+Version 1.04
+    * Added standard vendor prefix "-" to CSS. E.g. -bdrs (which works the same as -v-bdrs).
+    * Space issue with siblings.
+    * A trim issue that may result in wrong indention.
+    * Id and class attribute issue.
 
 Version 1.03
     * Fixed several issues and updated the snippets.ini file.
@@ -147,26 +153,50 @@ function TEmmet.AddTag(s: string; const sAttribute, sId, sClass, sText: string;
     const nIndent: Integer): string;
 var
   w,st: string;
+  n: Integer;
 begin
   if (s <> '') or (sId <> '') or (sClass <> '') or (sAttribute <> '') then
   begin
-    w := '<' + s + '>';
+    w := '';
     st := StringOfChar(#9,nIndent);
     if sId <> '' then
     begin
       if (s = '') then s := 'div';
-      w := '<' + s + #32 + sId + '>';
+      w := '<' + s + #32 + sId;
     end;
     if sClass <> '' then
     begin
-      w := CreateTagAndClass(s,sClass);
+      if w <> '' then
+      begin
+        if FTagInlineLevel.IndexOf(s) >= 0 then
+          w := w + '>' + '<span ' + sClass + '></span>'
+        else
+          w := w + #32 + sClass;
+      end
+      else
+        w := CreateTagAndClass(s,sClass);
     end;
     if sAttribute <> '' then
     begin
       if (s = '') then s := 'div';
-      w := '<' + s + ExtractUserAttributes(sAttribute) + '>';
+      if w <> '' then
+      begin
+        n := Pos(s,w);
+        if n > 0 then
+          Insert(ExtractUserAttributes(sAttribute), w, n + Length(s))
+        else if (w[Length(w)] = '>') then
+          Insert(ExtractUserAttributes(sAttribute), w, Length(w))
+        else
+          w := w + ExtractUserAttributes(sAttribute) + '>';
+      end
+      else
+        w := '<' + s + ExtractUserAttributes(sAttribute) + '>';
     end;
 
+    if w = '' then
+      w := '<' + s + '>'
+    else if (w <> '') and (w[Length(w)] <> '>') then
+      w := w + '>';
     FTagList.Add('</'+s+'>');
     Result := st + w + sText;
   end
@@ -264,7 +294,7 @@ var
     if s[1] <> '-' then Exit;
 
     n := Pos('-',s,2);
-    if n = 0 then Exit;
+    if n = 0 then n := 1;
     sv := Copy(s,1,n);
     Result := Copy(Result,n+1,Length(Result));
   end;
@@ -273,7 +303,7 @@ var
   begin
     Result := s;
 
-    if sv = '-v-' then
+    if (sv = '-') or (sv = '-v-') then
     begin
       bMultiCursorTabs := True;
       Result := '-webkit-' + s + #13#10;
@@ -579,7 +609,10 @@ begin
     Inc(indx);
     if (npos < indx) and (npos <= Length(sAbbrev)) and (indx > Length(sAbbrev)) then
     begin
-      s := s + AddExpanded(sAbbrev);
+      if (Length(s) > 0) and (s[Length(s)] = #10) then
+        s := s + AddExpanded(sAbbrev)
+      else
+        s := s + Trim(AddExpanded(sAbbrev));
       Dec(indent);
     end;
   end;
@@ -589,7 +622,7 @@ begin
     Result := InsertSelection(s)
   else
     Result := s;
-  if FTagList.Count = 0 then
+  if (FTagList.Count = 0) and (indent = 0) then
     Result := Trim(Result);
 end;
 
