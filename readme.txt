@@ -9,14 +9,11 @@ The Emmet code only expand abbreviation or wrap text with abbreviation. All othe
 stuff like handle tab points or multi cursors you will have to handle yourself in your
 own code. That's what I do in RJ TextEd.
 
+https://www.rj-texted.se/Forum/index.php
 https://www.rj-texted.se/Help/Emmetcheatsheet.html
 
-------------------------------------
+----------------------
 Unit Name: Emmet
-Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      30-May-2019
-Purpose:   Expand Emmet abbreviations
-
 Usage:
 Create an Emmet object
 
