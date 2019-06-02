@@ -1,8 +1,8 @@
 (*--------------------------------------------------------------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      1-June-2019
-Version:   1.05
+Date:      2-June-2019
+Version:   1.06
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -28,6 +28,11 @@ and call
 --------------------------------------------------------------------------------------------*)
 (*------------------------------------------------------------------------------------------
 Version updates and changes
+
+Version 1.06
+    * Space should be treated as stop character.
+    * Implicit tag issue.
+    * User attribute space issue.
 
 Version 1.05
     * Fixed a child indent issue.
@@ -68,6 +73,8 @@ type
     FExtends: string;
     FExtendsKey: string;
     FExtendsSnippetKey: string;
+    FFilenameLorem: string;
+    FFilenameSnippets: string;
     FFilters: TStringList;
     FLorem: TStringList;
     FRecursiveIndex: Integer;
@@ -96,15 +103,20 @@ type
         Integer; const indent: Integer): string;
     function ProcessTagMultiplication(const AString: string; const index, len,
         indent: Integer): string;
+    procedure SetFilenameLorem(const Value: string);
+    procedure SetFilenameSnippets(const Value: string);
   public
     constructor Create(const ADataPath: string);
     destructor Destroy; override;
     function ExpandAbbreviation(const AString, ASyntax, ASelText: string; out
         ASection: string; out bMultiCursorTabs: Boolean): string;
-    function GetAbbreviationNames(const ASyntax: string; var AList: TStringList):
+    function GetAbbreviationNames(const ASyntax: string; const AList: TStringList):
         Boolean;
-    function GetSnippetNames(const ASyntax: string; var AList: TStringList):
+    function GetSnippetNames(const ASyntax: string; const AList: TStringList):
         Boolean;
+    property FilenameLorem: string read FFilenameLorem write SetFilenameLorem;
+    property FilenameSnippets: string read FFilenameSnippets write
+        SetFilenameSnippets;
   end;
 
 implementation
@@ -133,7 +145,8 @@ const
 constructor TEmmet.Create(const ADataPath: string);
 begin
   inherited Create;
-  FAbbreviations := TMemIniFile.Create(ADataPath + DirectorySeparator + 'Snippets.ini');
+  FFilenameSnippets := ADataPath + DirectorySeparator + 'Snippets.ini';
+  FAbbreviations := TMemIniFile.Create(FFilenameSnippets);
 
   FFilters := TStringList.Create;
   FFilters.Delimiter := '|';
@@ -143,6 +156,7 @@ begin
   FTagInlineLevel.Delimiter := ',';
   FTagInlineLevel.DelimitedText := cInlineLevel;
 
+  FFilenameLorem := ADataPath + DirectorySeparator + 'Lorem.txt';
   FLorem := TStringList.Create;
 
   FDataPath := ADataPath;
@@ -163,6 +177,31 @@ function TEmmet.AddTag(s: string; const sAttribute, sId, sClass, sText: string;
 var
   w,st: string;
   n: Integer;
+
+  function ResolveEmptyTag: string;
+  var
+    w: string;
+  begin
+    if FTagList.Count > 0 then
+    begin
+      w := FTagList[FTagList.Count-1];
+      if w <> '' then
+        w := Copy(w,3,Length(w)-3);
+    end;
+    if FAbbreviations.ValueExists('elementmap', w) then
+    begin
+      Result := FAbbreviations.ReadString('elementmap', w, '');
+    end
+    else if FTagInlineLevel.IndexOf(w) >= 0 then
+    begin
+      Result := 'span';
+    end
+    else
+    begin
+      Result := 'div';
+    end;
+  end;
+
 begin
   if (s <> '') or (sId <> '') or (sClass <> '') or (sAttribute <> '') then
   begin
@@ -170,7 +209,7 @@ begin
     st := StringOfChar(#9,nIndent);
     if sId <> '' then
     begin
-      if (s = '') then s := 'div';
+      if (s = '') then s := ResolveEmptyTag;
       w := '<' + s + #32 + sId;
     end;
     if sClass <> '' then
@@ -187,7 +226,7 @@ begin
     end;
     if sAttribute <> '' then
     begin
-      if (s = '') then s := 'div';
+      if (s = '') then s := ResolveEmptyTag;
       if w <> '' then
       begin
         n := Pos(s,w);
@@ -261,7 +300,7 @@ begin
   Result := 'Lorem Ipsum ';
   if FLorem.Count <= 0 then
   begin
-    sz := FDataPath + DirectorySeparator + 'Lorem.txt';
+    sz := FFilenameLorem;
     if FileExists(sz) then
       FLorem.LoadFromFile(sz);
   end;
@@ -376,6 +415,55 @@ var
   tagListCount: Integer;
   s,sw,w: string;
   bInline,bText: Boolean;
+
+  function SkipToEndBrace(const s: string; i: Integer; const chStart, chEnd: Char): Integer;
+  var
+    n,np: Integer;
+  begin
+    Result := i;
+    np := 1;
+    Inc(i);
+    n := i;
+    while (i <= Length(s)) and (np > 0) do
+    begin
+      if s[i] = chStart then
+        Inc(np)
+      else if s[i] = chEnd then
+        Dec(np);
+      Inc(i);
+    end;
+
+    if (i > n) and (np = 0) then
+      Result := i - 1;
+  end;
+
+  function AddToString(const s, sAdd: string): string;
+  var
+    i: Integer;
+  begin
+    Result := s;
+    if Length(sAdd) = 0 then Exit;
+
+    if Length(s) = 0 then
+    begin
+      Result := sAdd;
+      Exit;
+    end;
+
+    if (Length(s) > 0) and (s[Length(s)] = #10) then
+    begin
+      Result := s + sAdd;
+      Exit;
+    end;
+
+    i := 1;
+    while (i <= Length(sAdd)) and CharInSet(sAdd[i], [#9,#32,#160]) do Inc(i);
+
+    if (i <= Length(sAdd)) and (sAdd[i] = '<') then
+      Result := s + Trim(sAdd)
+    else
+      Result := s + sAdd;
+  end;
 
   function InsertTabPoint(const s: string): string;
   var
@@ -614,14 +702,32 @@ begin
         npos := indx;
         Dec(indx);
       end;
+
+      '{': // skip to ending }
+      begin
+        indx := SkipToEndBrace(sAbbrev, indx, '{', '}');
+      end;
+
+      '[': // skip to ending ]
+      begin
+        indx := SkipToEndBrace(sAbbrev, indx, '[', ']');
+      end;
+
+      '"': // skip to ending "
+      begin
+        indx := SkipToEndBrace(sAbbrev, indx, '"', '"');
+      end;
+
+      #32: // space is a stop character and shouldn't be found here (wrap up and exit)
+      begin
+        Result := s + AddEndTags;
+        Exit;
+      end;
     end;
     Inc(indx);
     if (npos < indx) and (npos <= Length(sAbbrev)) and (indx > Length(sAbbrev)) then
     begin
-      if (Length(s) = 0) or ((Length(s) > 0) and (s[Length(s)] = #10)) then
-        s := s + AddExpanded(sAbbrev)
-      else
-        s := s + Trim(AddExpanded(sAbbrev));
+      s := AddToString(s,AddExpanded(sAbbrev));
       Dec(indent);
     end;
   end;
@@ -1073,7 +1179,7 @@ begin
           begin
             ls.Add(Copy(sAttribute,n,i-n+1));
             Inc(i);
-            n := i;
+            n := i+1;
           end;
         end
         else if sAttribute[i] = #32 then
@@ -1146,7 +1252,7 @@ begin
   end;
 end;
 
-function TEmmet.GetAbbreviationNames(const ASyntax: string; var AList:
+function TEmmet.GetAbbreviationNames(const ASyntax: string; const AList:
     TStringList): Boolean;
 var
   sa,se: string;
@@ -1170,8 +1276,8 @@ begin
   Result := AList.Count > 0;
 end;
 
-function TEmmet.GetSnippetNames(const ASyntax: string; var AList: TStringList):
-    Boolean;
+function TEmmet.GetSnippetNames(const ASyntax: string; const AList:
+    TStringList): Boolean;
 var
   sc,se: string;
   ls: TStringList;
@@ -1452,6 +1558,22 @@ begin
       Dec(num);
       Inc(nIndex,nInc);
     end;
+  end;
+end;
+
+procedure TEmmet.SetFilenameLorem(const Value: string);
+begin
+  FLorem.Clear;
+  FFilenameLorem := Value;
+end;
+
+procedure TEmmet.SetFilenameSnippets(const Value: string);
+begin
+  if FileExists(Value) then
+  begin
+    FAbbreviations.Free;
+    FAbbreviations := TMemIniFile.Create(Value);
+    FFilenameSnippets := Value;
   end;
 end;
 
