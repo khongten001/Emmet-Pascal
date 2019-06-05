@@ -47,8 +47,10 @@ begin
     ShowMessage('Emmet data folder not found:'#10+dir);
     Application.Terminate;
   end;
-  Caption:= 'Emmet data: '+dir;
-  FEmmet:= TEmmet.Create(dir);
+  FEmmet:= TEmmet.Create(
+    dir+DirectorySeparator+'Snippets.ini',
+    dir+DirectorySeparator+'Lorem.txt'
+    );
   List:= TStringList.Create;
 end;
 

@@ -15,10 +15,11 @@ Download the files and include the Pascal files in your project.
 First you need to create an Emmet object.
 
 ```
-FEmmet := TEmmet.Create(sDataPath);
+FEmmet := TEmmet.Create(snippetsPath, loremPath);
 ```
 
-where "sDataPath" is the path to the files snippets.ini and Lorem.txt, e.g. "c:\foo".
+snippetsFile      = The file path to snippets.ini e.g. "c:\foo\Snipptes.ini"
+loremFile         = The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
 
 To expand an abbreviation use
 

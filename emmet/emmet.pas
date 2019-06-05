@@ -1,16 +1,17 @@
 (*--------------------------------------------------------------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      4-June-2019
-Version:   1.07
+Date:      5-June-2019
+Version:   1.08
 Purpose:   Expand Emmet abbreviations
 
 Usage:
 Create an Emmet object
 
-    FEmmet := TEmmet.Create(sDataPath);
+    FEmmet := TEmmet.Create(snippetsPath, loremPath);
 
-    sDataPath         = The path to snippets.ini and Lorem.txt files e.g. "c:\foo"
+    snippetsFile      = The file path to snippets.ini e.g. "c:\foo\Snipptes.ini"
+    loremFile         = The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
 
 and call
 
@@ -28,6 +29,10 @@ and call
 --------------------------------------------------------------------------------------------*)
 (*------------------------------------------------------------------------------------------
 Version updates and changes
+
+Version 1.08
+    * Direction issue with multiply.
+    * Changes to the constructior.
 
 Version 1.07
     * Added support for placeholders $# used in "Wrap with abbreviation".
@@ -91,7 +96,6 @@ type
   private
     FTagList: TStringList;
     FAbbreviations: TMemIniFile;
-    FDataPath: string;
     FExtendedSyntax: Boolean;
     FExtends: string;
     FExtendsKey: string;
@@ -126,11 +130,8 @@ type
         Integer; const indent: Integer): string;
     function ProcessTagMultiplication(const AString: string; const index, len,
         indent: Integer): string;
-    procedure SetFilenameLorem(const Value: string);
-    procedure SetFilenameSnippets(const Value: string);
   public
-    constructor Create(const ADataPath: string; const ASnippetsFile: string = '';
-        const ALoremFile: string = ''); overload;
+    constructor Create(const ASnippetsFile, ALoremFile: string); overload;
     destructor Destroy; override;
     function ExpandAbbreviation(const AString, ASyntax, ASelText: string; out
         ASection: string; out bMultiCursorTabs: Boolean): string;
@@ -138,9 +139,6 @@ type
         Boolean;
     function GetSnippetNames(const ASyntax: string; const AList: TStringList):
         Boolean;
-    property FilenameLorem: string read FFilenameLorem write SetFilenameLorem;
-    property FilenameSnippets: string read FFilenameSnippets write
-        SetFilenameSnippets;
   end;
 
 implementation
@@ -166,20 +164,12 @@ end;
 const
   cInlineLevel = 'a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var';
 
-constructor TEmmet.Create(const ADataPath: string; const ASnippetsFile: string
-    = ''; const ALoremFile: string = '');
+constructor TEmmet.Create(const ASnippetsFile, ALoremFile: string);
 begin
   inherited Create;
 
-  if ASnippetsFile <> '' then
-    FFilenameSnippets := ASnippetsFile
-  else
-    FFilenameSnippets := ADataPath + DirectorySeparator + 'Snippets.ini';
-
-  if ALoremFile <> '' then
-    FFilenameLorem := ALoremFile
-  else
-    FFilenameLorem := ADataPath + DirectorySeparator + 'Lorem.txt';
+  FFilenameSnippets := ASnippetsFile;
+  FFilenameLorem := ALoremFile;
 
   FAbbreviations := TMemIniFile.Create(FFilenameSnippets);
 
@@ -192,8 +182,6 @@ begin
   FTagInlineLevel.DelimitedText := cInlineLevel;
 
   FLorem := TStringList.Create;
-
-  FDataPath := ADataPath;
 end;
 
 destructor TEmmet.Destroy;
@@ -1529,14 +1517,20 @@ var
     // Start and direction
     i := n - 1;
     while (i > 0) and CharInSet(ws[i], ['0'..'9']) do Dec(i);
+    sn := Copy(ws,i+1,n-i-1);
     if ws[i] = '-' then
     begin
-      astart := Result;
+      if sn <> '' then
+        astart := StrToInt(sn) + Result - 1
+      else
+        astart := Result;
       ainc := -1;
+    end
+    else
+    begin
+      if sn <> '' then
+        astart := StrToInt(sn);
     end;
-    sn := Copy(ws,i+1,n-i-1);
-    if sn <> '' then
-      astart := StrToInt(sn);
   end;
 
   function ReplaceVariables(const s: string; const nr: Integer): string;
@@ -1601,22 +1595,6 @@ begin
       Dec(num);
       Inc(nIndex,nInc);
     end;
-  end;
-end;
-
-procedure TEmmet.SetFilenameLorem(const Value: string);
-begin
-  FLorem.Clear;
-  FFilenameLorem := Value;
-end;
-
-procedure TEmmet.SetFilenameSnippets(const Value: string);
-begin
-  if FileExists(Value) then
-  begin
-    FAbbreviations.Free;
-    FAbbreviations := TMemIniFile.Create(Value);
-    FFilenameSnippets := Value;
   end;
 end;
 
