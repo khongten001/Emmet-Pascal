@@ -1,8 +1,8 @@
 (*--------------------------------------------------------------------------------------------
 Unit Name: Emmet
 Author:    Rickard Johansson  (https://www.rj-texted.se/Forum/index.php)
-Date:      2-June-2019
-Version:   1.06
+Date:      4-June-2019
+Version:   1.07
 Purpose:   Expand Emmet abbreviations
 
 Usage:
@@ -18,7 +18,7 @@ and call
 
     sAbbr             = Abbreviation                               e.g. "ul>li*5"
     sSyntax           = Code language in lowercase                 e.g. "html"
-    sSelText          = Text is used to wrap with abbreviation
+    sSelText          = Text is used in wrap with abbreviation
     sSection          = Get the section used in snippets.ini       e.g. "html"
     bMultiCursorTabs  = True if cursor positions in expanded string should be
                     handled as multi cursor positions
@@ -28,6 +28,29 @@ and call
 --------------------------------------------------------------------------------------------*)
 (*------------------------------------------------------------------------------------------
 Version updates and changes
+
+Version 1.07
+    * Added support for placeholders $# used in "Wrap with abbreviation".
+      The placeholder is replaced with one line of selected text.
+
+      E.g.
+        sAbbrev = "ul>li[title=$#]*>{$#}+img[alt=$#]"
+
+        sSelText =
+           "About
+            New
+            Products
+            Contacts"
+
+        Result =
+           "<ul>
+              <li title="About">About<img src="" alt="About" /></li>
+              <li title="New">New<img src="" alt="New" /></li>
+              <li title="Products">Products<img src="" alt="Products" /></li>
+              <li title="Contacts">Contacts<img src="" alt="Contacts" /></li>
+           </ul>"
+
+    * Added new parameters to the constructor.
 
 Version 1.06
     * Space should be treated as stop character.
@@ -106,7 +129,8 @@ type
     procedure SetFilenameLorem(const Value: string);
     procedure SetFilenameSnippets(const Value: string);
   public
-    constructor Create(const ADataPath: string);
+    constructor Create(const ADataPath: string; const ASnippetsFile: string = '';
+        const ALoremFile: string = ''); overload;
     destructor Destroy; override;
     function ExpandAbbreviation(const AString, ASyntax, ASelText: string; out
         ASection: string; out bMultiCursorTabs: Boolean): string;
@@ -142,10 +166,21 @@ end;
 const
   cInlineLevel = 'a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var';
 
-constructor TEmmet.Create(const ADataPath: string);
+constructor TEmmet.Create(const ADataPath: string; const ASnippetsFile: string
+    = ''; const ALoremFile: string = '');
 begin
   inherited Create;
-  FFilenameSnippets := ADataPath + DirectorySeparator + 'Snippets.ini';
+
+  if ASnippetsFile <> '' then
+    FFilenameSnippets := ASnippetsFile
+  else
+    FFilenameSnippets := ADataPath + DirectorySeparator + 'Snippets.ini';
+
+  if ALoremFile <> '' then
+    FFilenameLorem := ALoremFile
+  else
+    FFilenameLorem := ADataPath + DirectorySeparator + 'Lorem.txt';
+
   FAbbreviations := TMemIniFile.Create(FFilenameSnippets);
 
   FFilters := TStringList.Create;
@@ -156,7 +191,6 @@ begin
   FTagInlineLevel.Delimiter := ',';
   FTagInlineLevel.DelimitedText := cInlineLevel;
 
-  FFilenameLorem := ADataPath + DirectorySeparator + 'Lorem.txt';
   FLorem := TStringList.Create;
 
   FDataPath := ADataPath;
@@ -696,7 +730,7 @@ begin
         if (indx <= Length(sAbbrev)) and (sAbbrev[indx] = '>') then
         begin
           Inc(indx);
-          while (indx <= Length(sAbbrev)) and not CharInSet(sAbbrev[indx], ['>','+','^']) do Inc(indx);
+          while (indx <= Length(sAbbrev)) and not CharInSet(sAbbrev[indx], ['>','^']) do Inc(indx);
         end;
         s := s + ProcessTagMultiplication(sAbbrev,npos,indx-npos,indent);
         npos := indx;
@@ -1342,6 +1376,15 @@ begin
     wsel := GetFirstLine
   else
     wsel := FSelection;
+
+  n := Pos('$#',s);
+  if n > 0 then
+  begin
+    // Replace placeholders $# with selected text
+    Result := StringReplace(s,'$#',wsel,[rfReplaceAll]);
+    Exit;
+  end;
+
   n := 0;
   ind := 1;
   i := Length(s);
@@ -1538,7 +1581,7 @@ begin
   begin
     n := i;
     Inc(i);
-    while (i <= Length(AString)) and not CharInSet(AString[i], ['>','+','^']) do Inc(i);
+    while (i <= Length(AString)) and not CharInSet(AString[i], ['>','^']) do Inc(i);
     s := s + Copy(AString,n,i-n);
   end;
 

@@ -46,6 +46,10 @@ Gets True if cursor positions in expanded string should be handled as multi curs
 #### Result
 sExpanded is the resulting expanded code. It may contain cursor | positions or selected tab ${1:charset} positions.
 
+## Cheat sheets
+* **Emmet-Pascal** - [Cheat sheet](https://www.rj-texted.se/Help/Emmetcheatsheet.html)
+* **Standard Emmet** - [Cheat sheet](https://docs.emmet.io/cheat-sheet/)
+
 ## Authors
 
 * **Rickard Johansson** - *TEmmet.pas* - [RJ TextEd forum](https://www.rj-texted.se/Forum/index.php)
