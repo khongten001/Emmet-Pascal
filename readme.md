@@ -21,26 +21,45 @@ FEmmet := TEmmet.Create(snippetsPath, loremPath);
 * snippetsPath: The file path to Snippets.ini e.g. "c:\foo\Snipptes.ini"
 * loremPath: The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
 
-To expand an abbreviation use
+To expand an abbreviation, use
 
 ```
 sExpanded := FEmmet.ExpandAbbreviation(sAbbr, sSyntax, sSelText, sSection, bMultiCursorTabs);
 ```
 
-#### Parameters
+Parameters:
 
 * **sAbbr**: Abbreviation e.g. "ul>li*5"
-
 * **sSyntax**: Code language in lowercase e.g. "html". Available values are: html, css, xsl, svg, xml, jsx, less, sass, scss.
-
 * **sSelText**: Text is used to wrap with abbreviation
-
 * **sSection**: Gets the section used in snippets.ini e.g. "html"
-
 * **bMultiCursorTabs**: Gets True if cursor positions in expanded string should be handled as multi cursor positions
 
-#### Result
-sExpanded is the resulting expanded code. It may contain cursor | positions or selected tab ${1:charset} positions.
+Result: sExpanded is the resulting expanded code. It may contain cursor `|` positions or selected tab `${1:charset}` positions.
+
+### Wrap with abbreviation
+
+To use this feature, use parameter sSelText. E.g. if you call ExpandAbbreviation() with:
+
+* sAbbrev: `ul>li*`
+* sSelText: 
+```
+Line 1
+Line 2
+Line 3
+Line 4
+```
+
+You get the result
+
+```
+<ul>
+  <li>Line 1</li>
+  <li>Line 2</li>
+  <li>Line 3</li>
+  <li>Line 4</li>
+</ul>
+```
 
 ## Cheat sheets
 * **Emmet-Pascal** - [Cheat sheet](https://www.rj-texted.se/Help/Emmetcheatsheet.html)
