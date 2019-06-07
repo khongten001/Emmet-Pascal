@@ -18,8 +18,8 @@ First you need to create an Emmet object.
 FEmmet := TEmmet.Create(snippetsPath, loremPath);
 ```
 
-snippetsFile      = The file path to snippets.ini e.g. "c:\foo\Snipptes.ini"
-loremFile         = The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
+* snippetsFile      = The file path to snippets.ini e.g. "c:\foo\Snipptes.ini"
+* loremFile         = The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
 
 To expand an abbreviation use
 
@@ -29,20 +29,15 @@ sExpanded := FEmmet.ExpandAbbreviation(sAbbr, sSyntax, sSelText, sSection, bMult
 
 #### Parameters
 
-**sAbbr**
-Abbreviation e.g. "ul>li*5"
+* **sAbbr**: Abbreviation e.g. "ul>li*5"
 
-**sSyntax**
-Code language in lowercase e.g. "html". Available values are: html, css, xsl, svg, xml, jsx, less, sass, scss.
+* **sSyntax**: Code language in lowercase e.g. "html". Available values are: html, css, xsl, svg, xml, jsx, less, sass, scss.
 
-**sSelText**
-Text is used to wrap with abbreviation
+* **sSelText**: Text is used to wrap with abbreviation
 
-**sSection**
-Gets the section used in snippets.ini e.g. "html"
+* **sSection**: Gets the section used in snippets.ini e.g. "html"
 
-**bMultiCursorTabs**
-Gets True if cursor positions in expanded string should be handled as multi cursor positions
+* **bMultiCursorTabs**: Gets True if cursor positions in expanded string should be handled as multi cursor positions
 
 #### Result
 sExpanded is the resulting expanded code. It may contain cursor | positions or selected tab ${1:charset} positions.
