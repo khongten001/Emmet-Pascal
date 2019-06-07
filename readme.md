@@ -67,5 +67,5 @@ You get the result
 
 ## Authors
 
-* **Rickard Johansson** - *TEmmet.pas* - [RJ TextEd forum](https://www.rj-texted.se/Forum/index.php)
+* **Rickard Johansson** - *Emmet.pas* - [RJ TextEd forum](https://www.rj-texted.se/Forum/index.php)
 * **Alexey Torgashin** - *Misc files and demos* - [GitHub](https://github.com/Alexey-T)
