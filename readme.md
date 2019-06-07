@@ -18,8 +18,8 @@ First you need to create an Emmet object.
 FEmmet := TEmmet.Create(snippetsPath, loremPath);
 ```
 
-* snippetsFile      = The file path to snippets.ini e.g. "c:\foo\Snipptes.ini"
-* loremFile         = The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
+* snippetsPath: The file path to Snippets.ini e.g. "c:\foo\Snipptes.ini"
+* loremPath: The file path to Lorem.txt e.g. "c:\foo\Lorem.txt"
 
 To expand an abbreviation use
 
